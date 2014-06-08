@@ -1,0 +1,55 @@
+
+package database;
+
+import communication.Session;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import utility.Utils;
+
+public class UserDatabase {
+    private static UserDatabase _database;
+    private final Map<String, UserData> _users;
+    private final List<UserData> _activeUsers;
+    
+    private UserDatabase() {
+        _users = new HashMap<>();
+        _activeUsers = new ArrayList<>();
+        
+        _users.put("Scott", new UserData("Scott", Utils.hash("s123456"), 4));
+    }
+    
+    public static UserDatabase getInstance() {
+        if (_database == null) {
+            _database = new UserDatabase();
+        }
+        
+        return _database;
+    }
+    
+    public boolean verify(Session session) {
+        UserData user = _users.get(session.getName());
+        
+        return user != null && user.getPasswordDigest().compareTo(session.getID()) == 0;
+    }
+    
+    public Session login(String name, String password) {
+        UserData user = _users.get(name);
+        
+        if (user != null && password.compareTo(user.getPasswordDigest()) == 0) {
+            if (!_activeUsers.contains(user)) {
+                _activeUsers.add(user);
+            }
+            
+            return new Session(user.getName(), user.getSalt());
+        } else {
+            return null;
+        }
+    }
+    
+    public void logout(Session session) {
+        _activeUsers.remove(_users.get(session.getName()));
+    }
+    
+}
