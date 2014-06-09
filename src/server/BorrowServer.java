@@ -9,7 +9,7 @@ import java.util.concurrent.Executors;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-public class BorrowServer {
+public class BorrowServer extends Observable {
     private final int _port;
     private final int _maximumConnections;
     private final ServerSocket _serverSocket;
@@ -31,7 +31,7 @@ public class BorrowServer {
         while (true) {
             Socket socket = _serverSocket.accept();
             
-            pool.execute(new ConnectionHandler(socket));
+            pool.execute(new ConnectionHandler(socket, (Observable) this));
         }
     }
     

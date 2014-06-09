@@ -31,7 +31,7 @@ public class UserDatabase {
     public boolean verify(Session session) {
         UserData user = _users.get(session.getName());
         
-        return user != null && user.getPasswordDigest().compareTo(session.getID()) == 0;
+        return user != null && user.getSalt().compareTo(session.getID()) == 0;
     }
     
     public Session login(String name, String password) {
@@ -48,8 +48,8 @@ public class UserDatabase {
         }
     }
     
-    public void logout(Session session) {
-        _activeUsers.remove(_users.get(session.getName()));
+    public boolean logout(Session session) {
+        return _activeUsers.remove(_users.get(session.getName()));
     }
     
 }

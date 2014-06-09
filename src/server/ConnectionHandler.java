@@ -8,18 +8,27 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Observer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-class ConnectionHandler implements Runnable {
+class ConnectionHandler implements Runnable, Observer {
+    private Observable _server;
+    private List<String> _updateDataBuffer;
+    
     private Socket _socket;
     private ObjectInputStream _in;
     private ObjectOutputStream _out;
     private ItemDatabase _items;
     private UserDatabase _users;
     
-    public ConnectionHandler(Socket socket) {
+    public ConnectionHandler(Socket socket, Observable server) {
         try {
+            _server = server;
+            _updateDataBuffer = new ArrayList<String>();
+            
             _socket = socket;
             
             _out = new ObjectOutputStream(_socket.getOutputStream());
@@ -29,6 +38,8 @@ class ConnectionHandler implements Runnable {
             _users = UserDatabase.getInstance();
             
             _out.writeObject(_items.getItemList());
+            
+            _server.addObserver(this);
         } catch (IOException ex) {
             Logger.getLogger(ConnectionHandler.class.getName()).log(Level.SEVERE, null, ex);
         }
@@ -36,36 +47,40 @@ class ConnectionHandler implements Runnable {
     
     @Override
     public void run() {
-        do {
+        while (true) {
             try {
-                Request req = (Request) _in.readObject();
+                Request request = (Request) _in.readObject();
+                Response response = null;
+                boolean success = true;
                 
-                Session session = req.getSession();
+                Session session = request.getSession();
                 
                 if (session != null && !_users.verify(session)) {
-                    _out.writeBoolean(false);
+                    success = false;
+                    System.out.println("verfication failed.");
                 }
                 
-                switch (req.getRequestName()) {
+                switch (request.getRequestName()) {
                     case "Login":
-                        Login login = (Login) req;
+                        Login login = (Login) request;
                         
                         session = _users.login(login.getName(), login.getPasswordDigest());
                         
+                        response = new LoginResponse(session);
+                        
                         if (session != null) {
-                            _out.writeBoolean(true);
-                            
-                            _out.writeObject(session);
-                            
-                            System.out.println("User " + session.getName() + " login.");
-                        } else {
-                            _out.writeBoolean(false);
+                            _server.notifyObservers("User " + session.getName() + " login.");
                         }
+                        
                         break;
                     case "Logout":
-                        _users.logout(session);
+                        success = _users.logout(session);
                         
-                        System.out.println("User " + session.getName() + " logout.");
+                        response = new LogoutResponse(success);
+                        
+                        if (success) {
+                            _server.notifyObservers("User " + session.getName() + " logout.");
+                        }
                         
                         break;
                     case "Borrow":
@@ -73,20 +88,31 @@ class ConnectionHandler implements Runnable {
                     case "Back":
                         break;
                     case "Close connection":
+                        _server.deleteObserver(this);
+                        
                         _socket.close();
                         
                         break;
                 }
                 
                 if (!_socket.isClosed()) {
+                    response.setUpdateData(_updateDataBuffer);
+                    
+                    _out.writeObject(response);
                     _out.flush();
+                    
+                    _updateDataBuffer.clear();
                 } else {
                     break;
                 }
             } catch (IOException | ClassNotFoundException ex) {
                 Logger.getLogger(ConnectionHandler.class.getName()).log(Level.SEVERE, null, ex);
             }
-        } while (true);
+        }
     }
-    
+
+    @Override
+    public void update(java.util.Observable o, Object arg) {
+        _updateDataBuffer.add((String) arg);
+    }
 }

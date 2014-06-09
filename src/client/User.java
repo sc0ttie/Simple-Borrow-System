@@ -12,7 +12,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 public class User {
-    private String _name;
     private boolean _login;
     private Session _session;
     private Map<String, List<String>> _items;
@@ -31,21 +30,6 @@ public class User {
             _login = false;
             
             _items = (Map) _in.readObject();
-            
-//            new Thread() {
-//                @Override
-//                public void run() {
-//                    while (true) {
-//                        try {
-//                            update();
-//                            
-//                            Thread.sleep(100);
-//                        } catch (InterruptedException ex) {
-//                            Logger.getLogger(User.class.getName()).log(Level.SEVERE, null, ex);
-//                        }
-//                    }
-//                }
-//            }.start();
         } catch (IOException | ClassNotFoundException ex) {
             Logger.getLogger(User.class.getName()).log(Level.SEVERE, null, ex);
         }
@@ -55,35 +39,41 @@ public class User {
         return _session;
     }
     
-    public synchronized boolean login(String name, String password) {
+    public boolean login(String name, String password) {
         try {
             _out.writeObject(new Login(name, password));
             
-            if (_in.readBoolean() == true) {
-                _session = (Session) _in.readObject();
+            LoginResponse res = (LoginResponse) _in.readObject();
+            
+            if (res.succes()) {
+                _session = res.getSession();
                 
                 _login = true;
             }
-        } catch (IOException ex) {
-            Logger.getLogger(User.class.getName()).log(Level.SEVERE, null, ex);
-        } catch (ClassNotFoundException ex) {
+            
+            update(res.getUpdateData());
+        } catch (IOException | ClassNotFoundException ex) {
             Logger.getLogger(User.class.getName()).log(Level.SEVERE, null, ex);
         }
         
         return _login;
     }
     
-    public synchronized void logout() {
+    public void logout() {
         try {
             _out.writeObject(new Logout(_session));
             
+            LogoutResponse res = (LogoutResponse) _in.readObject();
+            
             _login = false;
-        } catch (IOException ex) {
+            
+            update(res.getUpdateData());
+        } catch (IOException | ClassNotFoundException ex) {
             Logger.getLogger(User.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
     
-    public synchronized void close() {
+    public void close() {
         try {
             if (_login) {
                 logout();
@@ -95,24 +85,16 @@ public class User {
         }
     }
     
-//    public synchronized void update() {
-//        try {
-//            if (_in.available() > 0) {
-//                String msg = (String) _in.readUTF();
-//                
-//                System.out.println(msg);
-//            }
-//        } catch (IOException ex) {
-//            Logger.getLogger(User.class.getName()).log(Level.SEVERE, null, ex);
-//        }
-//    }
+    public void update(List<String> data) {
+        for (String s : data) {
+            System.out.println(s);
+        }
+    }
     
     public static void main(String[] args) {
         User scott = new User("localhost", 3000);
         
-        boolean result = scott.login("Scott", "s123456");
-        
-        System.out.println(result);
+        scott.login("Scott", "s123456");
         
         scott.logout();
         
