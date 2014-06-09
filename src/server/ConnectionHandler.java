@@ -2,8 +2,7 @@
 package server;
 
 import communication.*;
-import database.ItemDatabase;
-import database.UserDatabase;
+import database.*;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
@@ -69,7 +68,7 @@ class ConnectionHandler implements Runnable, Observer {
                         response = new LoginResponse(session);
                         
                         if (session != null) {
-                            _server.notifyObservers("User " + session.getName() + " login.");
+                            _server.notifyObservers("User " + session.getName() + " login");
                         }
                         
                         break;
@@ -79,11 +78,24 @@ class ConnectionHandler implements Runnable, Observer {
                         response = new LogoutResponse(success);
                         
                         if (success) {
-                            _server.notifyObservers("User " + session.getName() + " logout.");
+                            _server.notifyObservers("User " + session.getName() + " logout");
                         }
                         
                         break;
                     case "Borrow":
+                        Borrow borrow = (Borrow) request;
+                        
+                        UserData user = _users.getUser(session);
+                        Item item = _items.getItem(borrow.getItemTag());
+                        
+                        success = success && _items.borrow(user, item, borrow.getDuration());
+                        
+                        response = new BorrowResponse(success);
+                        
+                        if (success) {
+                            _server.notifyObservers("User " + session.getName() + " borrow " + item);
+                        }
+                        
                         break;
                     case "Back":
                         break;

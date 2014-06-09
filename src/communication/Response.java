@@ -16,14 +16,10 @@ public abstract class Response implements Serializable {
     public Response(boolean success, List<String> updateData) {
         _success = success;
         
-        if (updateData != null) {
-            _updateData = new ArrayList<String>(updateData);
-        } else {
-            _updateData = new ArrayList<String>();
-        }
+        setUpdateData(updateData);
     }
     
-    public boolean succes() {
+    public boolean success() {
         return _success;
     }
     
@@ -36,8 +32,10 @@ public abstract class Response implements Serializable {
     }
     
     public void setUpdateData(List<String> data) {
-        for (String s : data) {
-            _updateData.add(s);
+        if (data == null) {
+            _updateData = new ArrayList<String>();
+        } else {
+            _updateData = new ArrayList<String>(data);
         }
     }
 }

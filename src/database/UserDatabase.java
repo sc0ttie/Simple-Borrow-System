@@ -34,6 +34,14 @@ public class UserDatabase {
         return user != null && user.getSalt().compareTo(session.getID()) == 0;
     }
     
+    public UserData getUser(Session session) {
+        if (verify(session)) {
+            return _users.get(session.getName());
+        } else {
+            return null;
+        }
+    }
+    
     public Session login(String name, String password) {
         UserData user = _users.get(name);
         

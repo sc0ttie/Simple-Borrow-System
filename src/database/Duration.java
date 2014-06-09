@@ -1,9 +1,10 @@
 
 package database;
 
+import java.io.Serializable;
 import java.util.Date;
 
-class Duration {
+public class Duration implements Serializable {
     private final Date _from;
     private final Date _to;
     

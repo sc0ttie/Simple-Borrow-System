@@ -5,19 +5,19 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class Item {
-    private final String _name;
+    private final ItemTag _itemTag;
     private final int _permission;
     private final List<Duration> _borrowedTime;
     
-    public Item(String name, int permission) {
-        _name = name;
+    public Item(ItemTag itemTag, int permission) {
+        _itemTag = itemTag;
         _permission = permission;
         
         _borrowedTime = new ArrayList<>();
     }
     
     public String getName() {
-        return _name;
+        return _itemTag.getName();
     }
     
     public int getPermissionLevel() {
@@ -38,5 +38,10 @@ public class Item {
     
     public void back(Duration time) {
         _borrowedTime.remove(time);
+    }
+    
+    @Override
+    public String toString() {
+        return _itemTag.toString();
     }
 }

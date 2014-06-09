@@ -15,8 +15,8 @@ public class ItemDatabase {
         _items = new HashMap<>();
         _itemList = new HashMap<>();
         
-        addItem("classroom", new Item("C209", 4));
-        addItem("classroom", new Item("C208", 4));
+        addItem("classroom", new Item(new ItemTag("classroon", "C209"), 4));
+        addItem("classroom", new Item(new ItemTag("classroon", "C208"), 4));
     }
     
     public static ItemDatabase getInstance() {
@@ -25,6 +25,16 @@ public class ItemDatabase {
         }
         
         return _database;
+    }
+    
+    public Item getItem(ItemTag tag) {
+        for (Item item : _items.get(tag.getCategory())) {
+            if (item.getName().compareTo(tag.getName()) == 0) {
+                return item;
+            }
+        }
+        
+        return null;
     }
     
     public Map<String, List<String>> getItemList() {

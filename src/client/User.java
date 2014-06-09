@@ -2,10 +2,12 @@
 package client;
 
 import communication.*;
+import database.*;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
@@ -35,6 +37,10 @@ public class User {
         }
     }
 
+    public Map<String, List<String>> getAllItemList() {
+        return _items;
+    }
+    
     public Session getSession() {
         return _session;
     }
@@ -45,7 +51,7 @@ public class User {
             
             LoginResponse res = (LoginResponse) _in.readObject();
             
-            if (res.succes()) {
+            if (res.success()) {
                 _session = res.getSession();
                 
                 _login = true;
@@ -57,6 +63,26 @@ public class User {
         }
         
         return _login;
+    }
+    
+    public boolean borrow(ItemTag tag, Duration duration) {
+        boolean success = false;
+        
+        try {
+            _out.writeObject(new Borrow(_session, tag, duration));
+            
+            BorrowResponse res = (BorrowResponse) _in.readObject();
+            
+            success = res.success();
+            
+            update(res.getUpdateData());
+        } catch (IOException ex) {
+            Logger.getLogger(User.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (ClassNotFoundException ex) {
+            Logger.getLogger(User.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        
+        return success;
     }
     
     public void logout() {
@@ -94,9 +120,25 @@ public class User {
     public static void main(String[] args) {
         User scott = new User("localhost", 3000);
         
-        scott.login("Scott", "s123456");
+        for (String category : scott.getAllItemList().keySet()) {
+            System.out.println(category);
+            for (String item : scott.getAllItemList().get(category)) {
+                System.out.println("\t" + item);
+            }
+        }
         
-        scott.logout();
+        boolean result = scott.login("Scott", "s123456");
+        
+        if (result == true) {
+            ItemTag tag = new ItemTag("classroom", "C208");
+            Duration duration = new Duration(new Date(), new Date());
+            
+            scott.borrow(tag, duration);
+            
+            scott.logout();
+        } else {
+            System.out.println("invalid username/password");
+        }
         
         scott.close();
     }
