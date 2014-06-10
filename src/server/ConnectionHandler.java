@@ -51,6 +51,7 @@ class ConnectionHandler implements Runnable, Observer {
                 Request request = (Request) _in.readObject();
                 Response response = null;
                 boolean success = true;
+                String updateMsg = null;
                 
                 Session session = request.getSession();
                 
@@ -67,9 +68,8 @@ class ConnectionHandler implements Runnable, Observer {
                         
                         response = new LoginResponse(session);
                         
-                        if (session != null) {
-                            _server.notifyObservers("User " + session.getName() + " login");
-                        }
+                        success = session != null;
+                        updateMsg = "User " + session.getName() + " login";
                         
                         break;
                     case "Logout":
@@ -77,9 +77,7 @@ class ConnectionHandler implements Runnable, Observer {
                         
                         response = new LogoutResponse(success);
                         
-                        if (success) {
-                            _server.notifyObservers("User " + session.getName() + " logout");
-                        }
+                        updateMsg = "User " + session.getName() + " logout";
                         
                         break;
                     case "Borrow":
@@ -92,12 +90,25 @@ class ConnectionHandler implements Runnable, Observer {
                         
                         response = new BorrowResponse(success);
                         
-                        if (success) {
-                            _server.notifyObservers("User " + session.getName() + " borrow " + item);
-                        }
+                        updateMsg = "User " + session.getName() + " borrow " + item;
                         
                         break;
                     case "Back":
+                        break;
+                    case "Query":
+                        Query query = (Query) request;
+                        
+                        item = _items.getItem(query.getItemTag());
+                        Duration duration = query.getDuration();
+                        
+                        success = success && !_items.isBorrowed(item, duration);
+                        
+                        response = new QueryResponse(success);
+                        
+                        break;
+                    case "Add category":
+                        break;
+                    case "Add item":
                         break;
                     case "Close connection":
                         _server.deleteObserver(this);
@@ -108,6 +119,10 @@ class ConnectionHandler implements Runnable, Observer {
                 }
                 
                 if (!_socket.isClosed()) {
+                    if (updateMsg != null) {
+                        _updateDataBuffer.add(updateMsg);
+                    }
+                    
                     response.setUpdateData(_updateDataBuffer);
                     
                     _out.writeObject(response);

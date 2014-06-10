@@ -41,10 +41,20 @@ public class ItemDatabase {
         return _itemList;
     }
     
-    public void addCategroy(String category) {
-        _items.put(category, new ArrayList<Item>());
-        
-        _itemList.put(category, new ArrayList<String>());
+    public boolean isBorrowed(Item item, Duration duration) {
+        return item.isBorrowed(duration);
+    }
+    
+    public boolean addCategroy(String category) {
+        if (_items.containsKey(category)) {
+            return false;
+        } else {
+            _items.put(category, new ArrayList<Item>());
+
+            _itemList.put(category, new ArrayList<String>());
+            
+            return true;
+        }
     }
     
     public void addItem(String category, Item item) {

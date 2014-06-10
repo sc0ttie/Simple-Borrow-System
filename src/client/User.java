@@ -65,6 +65,26 @@ public class User {
         return _login;
     }
     
+    public boolean query(ItemTag tag, Duration duration) {
+        boolean success = false;
+        
+        try {
+            _out.writeObject(new Query(_session, tag, duration));
+            
+            QueryResponse res = (QueryResponse) _in.readObject();
+            
+            success = res.success();
+            
+            update(res.getUpdateData());
+        } catch (IOException ex) {
+            Logger.getLogger(User.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (ClassNotFoundException ex) {
+            Logger.getLogger(User.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        
+        return success;
+    }
+    
     public boolean borrow(ItemTag tag, Duration duration) {
         boolean success = false;
         
@@ -132,6 +152,8 @@ public class User {
         if (result == true) {
             ItemTag tag = new ItemTag("classroom", "C208");
             Duration duration = new Duration(new Date(), new Date());
+            
+            System.out.println(scott.query(tag, duration));
             
             scott.borrow(tag, duration);
             

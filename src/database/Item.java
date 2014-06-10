@@ -24,16 +24,24 @@ public class Item {
         return _permission;
     }
     
-    public boolean borrow(Duration time) {
+    public boolean isBorrowed(Duration time) {
         for (Duration duration : _borrowedTime) {
             if (Duration.isOverlapped(duration, time)) {
-                return false;
+                return true;
             }
         }
         
-        _borrowedTime.add(time);
-        
-        return true;
+        return false;
+    }
+    
+    public boolean borrow(Duration time) {
+        if (!isBorrowed(time)) {
+            _borrowedTime.add(time);
+            
+            return true;
+        } else {
+            return false;
+        }
     }
     
     public void back(Duration time) {
