@@ -17,7 +17,7 @@ public class UserDatabase {
         _users = new HashMap<>();
         _activeUsers = new ArrayList<>();
         
-        _users.put("Scott", new UserData("Scott", Utils.hash("s123456"), 4));
+        _users.put("Scott", new UserData("Scott", Utils.hash("s123456"), Permission.USER));
     }
     
     public static UserDatabase getInstance() {
@@ -42,10 +42,14 @@ public class UserDatabase {
         }
     }
     
-    public Session login(String name, String password) {
+    public Session login(String name, String password, boolean admin) {
         UserData user = _users.get(name);
         
-        if (user != null && password.compareTo(user.getPasswordDigest()) == 0) {
+        if (user == null || (admin && user.getPermission() != Permission.ADV_USER)) {
+            return null;
+        }
+        
+        if (password.compareTo(user.getPasswordDigest()) == 0) {
             if (!_activeUsers.contains(user)) {
                 _activeUsers.add(user);
             }

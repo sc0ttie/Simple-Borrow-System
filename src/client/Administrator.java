@@ -13,13 +13,34 @@ public class Administrator extends User {
         super(hostname, port);
     }
     
-    public boolean addItem(String category, String name) {
+    @Override
+    public boolean login(String name, String password) {
+        try {
+            _out.writeObject(new Login(name, password, true));
+            
+            LoginResponse res = (LoginResponse) _in.readObject();
+            
+            if (res.success()) {
+                _session = res.getSession();
+                
+                super._login = true;
+            }
+            
+            update(res.getUpdateData());
+        } catch (IOException | ClassNotFoundException ex) {
+            Logger.getLogger(User.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        
+        return super._login;
+    }
+    
+    public boolean addItem(String category, String name, Permission permission) {
         boolean success = false;
         
         try {
-            ItemTag tag = new ItemTag(category, name);
+            Item item = new Item(new ItemTag(category, name), permission);
             
-            _out.writeObject(new AddItem(_session, tag));
+            _out.writeObject(new AddItem(_session, item));
             
             AddItemResponse res = (AddItemResponse) _in.readObject();
             

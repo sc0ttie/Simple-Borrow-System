@@ -6,21 +6,25 @@ import java.util.List;
 
 public class Item {
     private final ItemTag _itemTag;
-    private final int _permission;
+    private final Permission _permission;
     private final List<Duration> _borrowedTime;
     
-    public Item(ItemTag itemTag, int permission) {
+    public Item(ItemTag itemTag, Permission permission) {
         _itemTag = itemTag;
         _permission = permission;
         
         _borrowedTime = new ArrayList<>();
     }
     
+    public String getCategory() {
+        return _itemTag.getCategory();
+    }
+    
     public String getName() {
         return _itemTag.getName();
     }
     
-    public int getPermissionLevel() {
+    public Permission getPermission() {
         return _permission;
     }
     

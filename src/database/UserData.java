@@ -9,10 +9,10 @@ public class UserData {
     private final String _name;
     private String _passwordDigest;
     private String _salt;
-    private int _permission;
+    private Permission _permission;
     private List<Item> _borrowedItems;
     
-    public UserData(String name, String passwordDigest, int permission) {
+    public UserData(String name, String passwordDigest, Permission permission) {
         _name = name;
         _permission = permission;
         
@@ -39,7 +39,7 @@ public class UserData {
         return _salt;
     }
     
-    public int getPermissionLevel() {
+    public Permission getPermission() {
         return _permission;
     }
     

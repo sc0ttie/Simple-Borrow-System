@@ -64,12 +64,18 @@ class ConnectionHandler implements Runnable, Observer {
                     case "Login":
                         Login login = (Login) request;
                         
-                        session = _users.login(login.getName(), login.getPasswordDigest());
+                        String name = login.getName();
+                        String password = login.getPasswordDigest();
+                        boolean isAdminLogin = login.isAdminLogin();
+                        
+                        session = _users.login(name, password, isAdminLogin);
                         
                         response = new LoginResponse(session);
                         
                         success = session != null;
-                        updateMsg = "User " + session.getName() + " login";
+                        if (success) {
+                            updateMsg = "User " + session.getName() + " login";
+                        }
                         
                         break;
                     case "Logout":
@@ -86,7 +92,7 @@ class ConnectionHandler implements Runnable, Observer {
                         UserData user = _users.getUser(session);
                         Item item = _items.getItem(borrow.getItemTag());
                         
-                        success = success && _items.borrow(user, item, borrow.getDuration());
+                        success &= _items.borrow(user, item, borrow.getDuration());
                         
                         response = new BorrowResponse(success);
                         
@@ -101,14 +107,36 @@ class ConnectionHandler implements Runnable, Observer {
                         item = _items.getItem(query.getItemTag());
                         Duration duration = query.getDuration();
                         
-                        success = success && !_items.isBorrowed(item, duration);
+                        if (item == null) {
+                            success = false;
+                        } else {
+                            success &= !_items.isBorrowed(item, duration);
+                        }
                         
                         response = new QueryResponse(success);
                         
                         break;
                     case "Add category":
+                        AddCategory addCategory = (AddCategory) request;
+                        
+                        String categoryName = addCategory.getCategory();
+                        
+                        success &= _items.addCategroy(categoryName);
+                        
+                        response = new AddCategoryResponse(success);
+                        
+                        updateMsg = "A new category [" + categoryName + "] added.";
+                        
                         break;
                     case "Add item":
+                        AddItem addItem = (AddItem) request;
+                        
+                        item = addItem.getItem();
+                        
+                        _items.addItem(item);
+                        
+                        updateMsg = "A new item [" + item.getName() + "] added.";
+                        
                         break;
                     case "Close connection":
                         _server.deleteObserver(this);

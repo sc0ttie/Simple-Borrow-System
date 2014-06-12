@@ -1,18 +1,19 @@
 
 package communication;
 
-import database.ItemTag;
+import database.Item;
 
 public class AddItem extends Request {
-    private final ItemTag _itemTag;
+    private final Item _item;
     
-    public AddItem(Session session, ItemTag tag) {
+    
+    public AddItem(Session session, Item item) {
         super("Add item", session);
         
-        _itemTag = tag;
+        _item = item;
     }
     
-    public ItemTag getItemTag() {
-        return _itemTag;
+    public Item getItem() {
+        return _item;
     }
 }

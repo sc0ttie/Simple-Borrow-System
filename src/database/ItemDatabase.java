@@ -15,8 +15,8 @@ public class ItemDatabase {
         _items = new HashMap<>();
         _itemList = new HashMap<>();
         
-        addItem("classroom", new Item(new ItemTag("classroon", "C209"), 4));
-        addItem("classroom", new Item(new ItemTag("classroon", "C208"), 4));
+        addItem(new Item(new ItemTag("classroom", "C209"), Permission.USER));
+        addItem(new Item(new ItemTag("classroom", "C208"), Permission.USER));
     }
     
     public static ItemDatabase getInstance() {
@@ -28,9 +28,11 @@ public class ItemDatabase {
     }
     
     public Item getItem(ItemTag tag) {
-        for (Item item : _items.get(tag.getCategory())) {
-            if (item.getName().compareTo(tag.getName()) == 0) {
-                return item;
+        if (_items.containsKey(tag.getCategory())) {        
+            for (Item item : _items.get(tag.getCategory())) {
+                if (item.getName().compareTo(tag.getName()) == 0) {
+                    return item;
+                }
             }
         }
         
@@ -57,7 +59,8 @@ public class ItemDatabase {
         }
     }
     
-    public void addItem(String category, Item item) {
+    public void addItem(Item item) {
+        String category = item.getCategory();
         List<Item> items = _items.get(category);
         
         if (items == null) {
@@ -72,7 +75,7 @@ public class ItemDatabase {
     }
     
     public boolean borrow(UserData user, Item item, Duration duration) {
-        if (user.getPermissionLevel() >= item.getPermissionLevel()) {
+        if (item != null && user.getPermission().enough(item.getPermission())) {
             if (item.borrow(duration) == true) {
                 user.borrow(item);
                 

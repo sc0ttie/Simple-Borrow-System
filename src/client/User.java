@@ -150,7 +150,7 @@ public class User {
         boolean result = scott.login("Scott", "s123456");
         
         if (result == true) {
-            ItemTag tag = new ItemTag("classroom", "C208");
+            ItemTag tag = new ItemTag("classroo", "C208");
             Duration duration = new Duration(new Date(), new Date());
             
             System.out.println(scott.query(tag, duration));
