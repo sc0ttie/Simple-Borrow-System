@@ -55,6 +55,8 @@ public class User {
                 _session = res.getSession();
                 
                 _login = true;
+            } else {
+                _login = false;
             }
             
             update(res.getUpdateData());
