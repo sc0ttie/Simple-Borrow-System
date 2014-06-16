@@ -104,13 +104,18 @@ class ConnectionHandler implements Runnable, Observer {
                     case "Query":
                         Query query = (Query) request;
                         
+                        user = _users.getUser(session);
                         item = _items.getItem(query.getItemTag());
                         Duration duration = query.getDuration();
                         
                         if (item == null) {
                             success = false;
                         } else {
-                            success &= !_items.isBorrowed(item, duration);
+                            if (user.getPermission().enough(item.getPermission())) {
+                                success &= !_items.isBorrowed(item, duration);
+                            } else {
+                                success = false;
+                            }
                         }
                         
                         response = new QueryResponse(success);

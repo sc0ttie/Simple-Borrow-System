@@ -84,6 +84,12 @@ public class Administrator extends User {
         
         boolean result = admin.login("Scott", "s123456");
         
+        System.out.println("Scott " + result);
+        
+        result = admin.login("Johnson", "s123456");
+        
+        System.out.println("Johnson " + result);
+        
         if (result == true) {
             ItemTag tag = new ItemTag("classroom", "C208");
             Duration duration = new Duration(new Date(), new Date());

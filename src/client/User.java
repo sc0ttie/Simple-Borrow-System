@@ -161,12 +161,15 @@ public class User {
         boolean result = scott.login("Scott", "s123456");
         
         if (result == true) {
-            ItemTag tag = new ItemTag("classroo", "C208");
+            ItemTag tag1 = new ItemTag("classroom", "C208");
+            ItemTag tag2 = new ItemTag("movie", "iron man");
             Duration duration = new Duration(new Date(), new Date());
             
-            System.out.println(scott.query(tag, duration));
+            System.out.println(scott.query(tag1, duration));
+            System.out.println(scott.query(tag2, duration));
             
-            scott.borrow(tag, duration);
+            scott.borrow(tag1, duration);
+            scott.borrow(tag2, duration);
             
             scott.logout();
         } else {
