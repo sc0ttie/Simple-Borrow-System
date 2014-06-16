@@ -92,11 +92,17 @@ class ConnectionHandler implements Runnable, Observer {
                         UserData user = _users.getUser(session);
                         Item item = _items.getItem(borrow.getItemTag());
                         
-                        success &= _items.borrow(user, item, borrow.getDuration());
+                        if (user == null) {
+                            success = false;
+                        } else {
+                            success &= _items.borrow(user, item, borrow.getDuration());
+                        }
                         
                         response = new BorrowResponse(success);
                         
-                        updateMsg = "User " + session.getName() + " borrow " + item;
+                        if (success) {
+                            updateMsg = "User " + session.getName() + " borrow " + item;
+                        }
                         
                         break;
                     case "Back":
@@ -110,6 +116,12 @@ class ConnectionHandler implements Runnable, Observer {
                         
                         if (item == null) {
                             success = false;
+                        } else if (user == null) {
+                            if (item.getPermission() == Permission.PUBLIC) {
+                                success = !_items.isBorrowed(item, duration);
+                            } else {
+                                success = false;
+                            }
                         } else {
                             if (user.getPermission().enough(item.getPermission())) {
                                 success &= !_items.isBorrowed(item, duration);
