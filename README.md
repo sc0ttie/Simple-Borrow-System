@@ -5,7 +5,7 @@ Simple Borrow System
 Used design patterns
 --------------------
 * Observer pattern
-* Template pattern
+* Singleton pattern
 
 License
 -------
